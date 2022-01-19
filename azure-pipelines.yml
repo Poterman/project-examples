@@ -1,0 +1,46 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  name: default
+
+steps:
+- script: echo Hello, world!
+  displayName: 'Run a one-line script'
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
+- task: JFrogMaven@1
+  inputs:
+    mavenPomFile: 'C:\Users\danielp-azure\Downloads\project-examples-master\project-examples-master\maven-examples\maven-example\pom.xml'
+    goals: 'install'
+    artifactoryResolverService: 'artifactory-test'
+    targetResolveReleaseRepo: 'global-libs-release'
+    targetResolveSnapshotRepo: 'global-libs-snapshot'
+    artifactoryDeployService: 'artifactory-test'
+    targetDeployReleaseRepo: 'global-libs-release-local'
+    targetDeploySnapshotRepo: 'global-libs-snapshot-local'
+    collectBuildInfo: true
+    buildName: '$(Build.DefinitionName)'
+    buildNumber: '$(Build.BuildNumber)'
+
+- task: JFrogPublishBuildInfo@1
+  inputs:
+    artifactoryConnection: 'artifactory-test'
+    buildName: '$(Build.DefinitionName)'
+    buildNumber: '$(Build.BuildNumber)'
+
+- task: JFrogBuildScan@1
+  inputs:
+    xrayConnection: 'xray-test'
+    buildName: '$(Build.DefinitionName)'
+    buildNumber: '$(Build.BuildNumber)'
+    allowFailBuild: true
+    vuln: false
